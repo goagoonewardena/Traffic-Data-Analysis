@@ -1,6 +1,4 @@
 # Author: Gethmi Oshadhi Andrya Goonewardena
-# Date: 2024.12.24
-# Student ID: w2120165
 
 import os
 import csv
@@ -87,6 +85,7 @@ def process_csv_data(file_path):
 
     hourly_counts_j1 = {}
     hourly_counts_j2 = {}
+    rainy_hours = set()
 
     try:
         with open(file_path, 'r') as csv_file:
@@ -101,7 +100,11 @@ def process_csv_data(file_path):
                     outcomes["two_wheeled_vehicles"] += 1
                 if row["VehicleType"] == "Bicycle":
                     outcomes["total_bicycles"] +=1
-                if row["travel_Direction_out"] == "N" and row["JunctionName"] == "Elm Avenue/Rabbit Road" and row["VehicleType"] == "Buss":
+                if (
+                    row["travel_Direction_out"].upper() == "N"
+                    and row["JunctionName"] == "Elm Avenue/Rabbit Road"
+                    and row["VehicleType"].lower() == "buss"
+                ):
                     outcomes["northbound_buses"] += 1
                 if row["travel_Direction_in"] == row["travel_Direction_out"]:
                     outcomes["no_turns"] += 1
@@ -110,11 +113,6 @@ def process_csv_data(file_path):
 
                 junction = row["JunctionName"]
                 hour = row["timeOfDay"].split(":")[0]
-
-
-                if row["JunctionName"] == "Elm Avenue/Rabbit Road" and row["VehicleType"].lower() == "Buss" and row["travel_Direction_out"].upper() == "N":
-                    outcomes["northbound_buses"] +=1
-
                 if junction == "Elm Avenue/Rabbit Road":
                     outcomes["junction_1_total"] += 1
                     hourly_counts_j1[hour] = hourly_counts_j1.get(hour, 0) + 1
@@ -124,19 +122,19 @@ def process_csv_data(file_path):
                     outcomes["junction_2_total"] += 1
                     hourly_counts_j2[hour] = hourly_counts_j2.get(hour, 0) + 1
 
-                if row["Weather_Conditions"] == "Rain":
-                    outcomes["rain_hours"] += 1
+                if "rain" in row["Weather_Conditions"].lower():
+                    rainy_hours.add(hour)
 
         outcomes["hourly_counts_j1"] = hourly_counts_j1
         outcomes["hourly_counts_j2"] = hourly_counts_j2
 
-        if hourly_counts_j1 or hourly_counts_j2:
-            max_j1 = max(hourly_counts_j1.values(), default=0)
-            max_j2 = max(hourly_counts_j2.values(), default=0)
-            outcomes["peak_hour_traffic"] = max(max_j1, max_j2)
+        outcomes["rain_hours"] = len(rainy_hours)
+
+        if hourly_counts_j2:
+            outcomes["peak_hour_traffic"] = max(hourly_counts_j2.values())
             outcomes["peak_hours"] = [
-                f"Between {hour}:00 and {int(hour) + 1}:00"
-                for hour, count in {**hourly_counts_j1, **hourly_counts_j2}.items()
+                f"between {int(hour):02}:00 and {int(hour) + 1:02}:00"
+                for hour, count in hourly_counts_j2.items()
                 if count == outcomes["peak_hour_traffic"]
             ]
 

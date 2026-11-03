@@ -4,12 +4,6 @@
 
 - Gethmi Oshadhi Andrya Goonewardena
 
-
-
-## Coursework
-
-- Coursework 1
-
 ## Description
 
 This Python program analyses traffic survey data stored in CSV files. It asks the
